@@ -20,6 +20,7 @@ class CloudStorageApplicationTests {
 	private int port;
 
 	private WebDriver driver;
+	String baseURL;
 
 	@BeforeAll
 	static void beforeAll() {
@@ -28,7 +29,9 @@ class CloudStorageApplicationTests {
 
 	@BeforeEach
 	public void beforeEach() {
+
 		this.driver = new ChromeDriver();
+		baseURL = "http://localhost:" + port;
 	}
 
 	@AfterEach
@@ -37,6 +40,115 @@ class CloudStorageApplicationTests {
 			driver.quit();
 		}
 	}
+
+
+	@Test
+	public void testUnauthorizedAccess(){//Test that verifies that an authorized user can only access the login and signup oages
+
+		driver.get(baseURL + "/home");
+		Assertions.assertNotEquals("Home", driver.getTitle());
+
+		driver.get(baseURL + "/signup");
+		Assertions.assertEquals("Sign Up", driver.getTitle());
+
+		driver.get(baseURL + "/login");
+		Assertions.assertEquals("Login", driver.getTitle());
+
+
+	}
+
+	@Test
+	public void testSignupAndLogin() { //Test that signs up a user, logs in , verifies that home page is accessible, logs out and verifies that home page is no longer accessible
+		String firsName = "Kolade";
+		String lastName = "Bamky";
+		String username = "kola";
+		String password = "temppassword";
+
+//		Testing the signup
+		SignupPage signupPage = new SignupPage(driver);
+		driver.get(baseURL + "/signup");
+		signupPage.signUp(firsName, lastName, username, password);
+
+//		Testing the login
+		driver.get(baseURL + "/login");
+		LoginPage loginPage = new LoginPage(driver);
+		loginPage.loginTest(username, password);
+
+//		Test if home page is accessible
+		driver.get(baseURL + "/home");
+		Assertions.assertEquals("Home", driver.getTitle());
+
+	}
+	@Test
+		public void testLogoutAndInaccessibility(){
+		testSignupAndLogin();
+//		Log out
+		HomePage homePage = new HomePage(driver);
+		homePage.testLogout();
+
+//		Check if home can be assessed
+		driver.get(baseURL + "/home");
+		Assertions.assertNotEquals("Home", driver.getTitle());
+
+	}
+
+
+//	Test for Note creation, viewing, editing and deletion
+	//Test for note creation
+	@Test
+	public void testNoteCreation(){
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 2);
+		testSignupAndLogin(); //sign up and log in first
+		String noteTitle = "First note";
+		String noteDescription = "This is the first note";
+
+	//	Test for note creation
+
+		NotePage notePage = new NotePage(driver);
+
+		notePage.clickNavNoteTab();
+
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("addNewNote")));
+		notePage.addNote();
+
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("note-title")));
+		notePage.newNoteTitle(noteTitle);
+
+		notePage.newNoteDescription(noteDescription);
+		notePage.noteSubmit();
+
+		//Test for note viewing
+
+		notePage.clickNavNoteTab();
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteTitle")));
+		Assertions.assertEquals(noteTitle, notePage.viewTitle());
+
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteDescription")));
+		Assertions.assertEquals(noteDescription, notePage.viewDescription());
+
+	}
+
+
+	@Test
+	public void testEditNote(){
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 2);
+		testNoteCreation();
+		String editedTitle = "Edited First Note";
+		String editedNote = "This is the edited first note";
+
+		NotePage notePage = new NotePage(driver);
+		notePage.editButtonClick();
+
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("note-title")));
+		notePage.editNoteTitle(editedTitle);
+		notePage.noteSubmit();
+
+		notePage.clickNavNoteTab();
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteTitle")));
+		Assertions.assertEquals(editedTitle,  notePage.viewTitle());
+
+	}
+
 
 	@Test
 	public void getLoginPage() {
