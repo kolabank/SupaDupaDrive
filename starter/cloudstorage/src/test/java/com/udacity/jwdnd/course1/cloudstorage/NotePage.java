@@ -7,7 +7,6 @@ import org.openqa.selenium.support.PageFactory;
 
 public class NotePage {
 
-
     @FindBy(id="nav-notes-tab")
     WebElement navNoteTab;
 
@@ -34,6 +33,9 @@ public class NotePage {
     @FindBy(id="noteEdit")
     WebElement noteEdit;
 
+    @FindBy(id= "noteDelete")
+    WebElement noteDeleteButton;
+
     public NotePage(WebDriver webDriver){
         PageFactory.initElements(webDriver, this);
     }
@@ -48,10 +50,12 @@ public class NotePage {
     }
 
     public void newNoteTitle(String newTitle){
+        this.noteTitleText.clear();
         this.noteTitleText.sendKeys(newTitle);
     }
 
     public void newNoteDescription (String newDescription){
+        this.noteDescriptionText.clear();
         this.noteDescriptionText.sendKeys(newDescription);
     }
 
@@ -77,4 +81,7 @@ public class NotePage {
         this.noteTitleText.sendKeys(newTitle);
     }
 
+    public void deleteNote(){
+        this.noteDeleteButton.click();
+    }
 }
